@@ -68,7 +68,13 @@ def run_pipeline(user_function,
             t. ! {leaky_q} ! glfilterbin filter=glcolorscale
                ! {dl_caps} ! videoconvert ! {sink_caps} ! {sink_element}
             t. ! {leaky_q} ! glfilterbin filter=glcolorscale
-               ! rsvgoverlay name=overlay ! waylandsink
+               ! rsvgoverlay name=overlay ! videoconvert 
+               ! x264enc speed_preset=ultrafast tune=zerolatency threads=1 key_int_max=30 bitrate=1024 aud=False
+               ! video/x-h264,profile=baseline,stream_format=byte-stream
+               ! h264parse
+               ! rtph264pay mtu=1280
+               ! application/x-rtp,payload=96,ssrc=(uint)555555
+               ! udpsink host=127.0.0.1 port=47806
         """
     else:
         SRC_CAPS = 'video/x-raw,width={width},height={height},framerate=30/1'
