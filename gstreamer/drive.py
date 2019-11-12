@@ -47,6 +47,8 @@ def main():
                         help='number of classes with highest score to display')
     parser.add_argument('--threshold', type=float, default=0.1,
                         help='class score threshold')
+    parser.add_argument('--port', type=int, default=47806,
+                        help='output port')
     args = parser.parse_args()
 
     print("Loading %s with %s labels."%(args.model, args.labels))
@@ -64,6 +66,7 @@ def main():
       results = engine.ClassifyWithImage(image, threshold=args.threshold, top_k=args.top_k)
       end_time = time.monotonic()
       text_lines = [
+          'blank',
           'Inference: %.2f ms' %((end_time - start_time) * 1000),
           'FPS: %.2f fps' %(1.0/(end_time - last_time)),
       ]
@@ -78,9 +81,9 @@ def main():
         with urllib.request.urlopen(labels[mindex]) as response:
            html = response.read()
       last_time = end_time
-#generate_svg(svg_canvas, text_lines)
+      generate_svg(svg_canvas, text_lines)
 
-    result = gstreamer.run_pipeline(user_callback)
+    result = gstreamer.run_pipeline(user_callback,args.port)
 
 if __name__ == '__main__':
     main()

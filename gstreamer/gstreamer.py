@@ -58,7 +58,7 @@ def detectCoralDevBoard():
   except: pass
   return False
 
-def run_pipeline(user_function,
+def run_pipeline(user_function,port,
                  src_size=(640,480),
                  appsink_size=(320, 180)):
     PIPELINE = 'v4l2src device=/dev/video0 ! {src_caps} ! {leaky_q} '
@@ -74,7 +74,7 @@ def run_pipeline(user_function,
                ! h264parse
                ! rtph264pay mtu=1280
                ! application/x-rtp,payload=96,ssrc=(uint)555555
-               ! udpsink host=127.0.0.1 port=47806
+               ! udpsink host=127.0.0.1 port={port}
         """
     else:
         SRC_CAPS = 'video/x-raw,width={width},height={height},framerate=30/1'
@@ -89,12 +89,13 @@ def run_pipeline(user_function,
     SINK_CAPS = 'video/x-raw,format=RGB,width={width},height={height}'
     LEAKY_Q = 'queue max-size-buffers=1 leaky=downstream'
 
+
     src_caps = SRC_CAPS.format(width=src_size[0], height=src_size[1])
     dl_caps = DL_CAPS.format(width=appsink_size[0], height=appsink_size[1])
     sink_caps = SINK_CAPS.format(width=appsink_size[0], height=appsink_size[1])
     pipeline = PIPELINE.format(leaky_q=LEAKY_Q,
         src_caps=src_caps, dl_caps=dl_caps, sink_caps=sink_caps,
-        sink_element=SINK_ELEMENT)
+        sink_element=SINK_ELEMENT,port=port)
 
     print('Gstreamer pipeline: ', pipeline)
     pipeline = Gst.parse_launch(pipeline)
